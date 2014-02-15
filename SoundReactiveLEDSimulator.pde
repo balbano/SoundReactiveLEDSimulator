@@ -1,15 +1,23 @@
-import ddf.minim.analysis.*;
+/**
+  Processing simulation of sound reactive LED installation for the University of Chicago Arts Incubator.
+  MFA 6009-004: Nodes II | Spring 2014 | SAIC
+  SAIC Students: Brendan Albano, Haley Shonkwiler, Maggie Grady
+  External Collaborators: Kate Barbaria
+  
+  Copyright (c) 2014 Brendan Albano, Haley Shonkwiler, Kate Barbaria, Maggie Grady.
+  The MIT License (MIT)
+*/
+
 import ddf.minim.*;
 
 Minim minim;
+// AudioPlayers for each simulated microphone location
 AudioPlayer conversation, music, woodshop, typing, street;
-FFT fftLog;
-FFT fftLog2;
 
-// 2D Array of cell objects represents LEDs
-Cell[][] grid;
+// Representation of grid of LEDs
+LED[][] grid;
 // Buffer for Game of Life stuff
-Cell[][] gridBuffer;
+LED[][] gridBuffer;
 
 // Number of columns and rows
 int cols = 180;
@@ -24,9 +32,8 @@ int[][] horizontalOffsets = {
   {107, thinColumn}, {125, mullion}, {143, wideColumn}, {161, mullion}
 };
 
-int numberOfOffsets = 9;
-
-int size = 2;
+// Parameters for LED grid.
+int LEDSize = 2;
 int spacing = 5;
 int baseXOffset = 20;
 int baseYOffset = 20;
@@ -34,29 +41,25 @@ int xOffset;
 int yOffset;
 
 void setup() {
-  frameRate(15);
+  frameRate(15); // 15 looks good, can be modified.
   size(1000, 150);
+  
   // Set up grid
-  grid = new Cell[cols][rows];
-  gridBuffer = new Cell[cols][rows];
+  grid = new LED[cols][rows];
+  gridBuffer = new LED[cols][rows];
   for (int i = 0; i < cols; i++) {
     for (int j = 0; j < rows; j++) {
-      // Calculate offsets
-      xOffset = baseXOffset + calcOffset(i, numberOfOffsets, horizontalOffsets);
+      // Calculate offsets (for mullions, columns, etc.)
+      xOffset = baseXOffset + calcOffset(i, horizontalOffsets);
       yOffset = baseYOffset;
 
-      // Initialize each object
-      grid[i][j] = new Cell(i*spacing + xOffset, j*spacing + yOffset, 
-                            size, size, 255,255,255, false); // x, y, w, h, red, green, blue, alive
-      gridBuffer[i][j] = new Cell(i*spacing + xOffset, j*spacing + yOffset, 
-                            size, size, 255, 255, 255, false); // x, y, w, h, red, green, blue, alive
+      // Initialize LEDs (x, y, w, h, red, green, blue, alive)
+      grid[i][j] = new LED(i*spacing + xOffset, j*spacing + yOffset, 
+                            LEDSize, LEDSize, 255,255,255, false);
+      gridBuffer[i][j] = new LED(i*spacing + xOffset, j*spacing + yOffset, 
+                            LEDSize, LEDSize, 255, 255, 255, false);
     }
   }
-  // Line wiggler test
-  // grid[2][2].alive = true;
-  // grid[3][2].alive = true;
-  // grid[4][2].alive = true;
-  
   
   // Set up audio
   minim = new Minim(this);
@@ -72,86 +75,50 @@ void setup() {
   woodshop.loop();
   typing.loop();
   street.loop();
-  
-  // create FFT objects that have a time-domain buffer 
-  // the same size as jingle's sample buffer
-  // note that this needs to be a power of two 
-  // and that it means the size of the spectrum will be half as large.
-  /*
-  fftLog = new FFT(conversation.bufferSize(), conversation.sampleRate());
-  fftLog.logAverages( 22, 1 );
-  fftLog2 = new FFT(music.bufferSize(), music.sampleRate());
-  fftLog2.logAverages( 22, 1 );
-  */
 }
 
 void draw() {
   background(0);
   
-  // Compute the FFTs and bin by octaves
-  /*
-  fftLog.forward(conversation.mix);
-  fftLog2.forward(music.mix);
-  */
-  
-  // The counter i and j are also the column and
-  // row numbers and are used as arguments to the
-  // constructor for each object in the grid.
+  // Set audio node LEDs to alive and magenta.
+  LED[] audioNodes = {grid[20][2], grid[50][5], grid[80][8], grid[100][3], grid[170][5]};
+  for (int i = 0; i < audioNodes.length; i++){
+    audioNodes[i].alive = true;
+    audioNodes[i].red = 255;
+    audioNodes[i].green = 0;
+    audioNodes[i].blue = 255;
+  }
+  // Birth cells based on volume and display cells
   for (int x = 0; x < cols; x++) {
-    for (int y = 0; y < rows; y++) {
-      // Birth cells based on volume
-      float distanceFactor1 = pointDistFactor(grid[20][2].x, grid[20][2].y, grid[x][y].x, grid[x][y].y, 0, 500 * conversation.mix.level());
-      float distanceFactor2 = pointDistFactor(grid[50][5].x, grid[50][5].y, grid[x][y].x, grid[x][y].y, 0, 500 * music.mix.level());
-      float distanceFactor3 = pointDistFactor(grid[80][8].x, grid[80][8].y, grid[x][y].x, grid[x][y].y, 0, 300 * woodshop.mix.level());
-      float distanceFactor4 = pointDistFactor(grid[100][3].x, grid[100][3].y, grid[x][y].x, grid[x][y].y, 0, 700 * typing.mix.level());
-      float distanceFactor5 = pointDistFactor(grid[170][5].x, grid[170][5].y, grid[x][y].x, grid[x][y].y, 0, 500 * street.mix.level());
-      float level1 = distanceFactor1 * conversation.mix.level();
-      float level2 = distanceFactor2 * music.mix.level();
-      float level3 = distanceFactor3 * woodshop.mix.level();
-      float level4 = distanceFactor4 * typing.mix.level();
-      float level5 = distanceFactor5 * street.mix.level();
-      float level = constrain(level1 + level2 + level3 + level4 + level5, 0, 1);
-      /*
+    for (int y = 0; y < rows; y++) {      
+      float conversationLevel = factorLevelByDistance(audioNodes[0].x, audioNodes[0].y, grid[x][y].x, grid[x][y].y, 
+                                                      conversation.mix.level(), 500.);
+      float musicLevel = factorLevelByDistance(audioNodes[1].x, audioNodes[1].y, grid[x][y].x, grid[x][y].y,
+                                               music.mix.level(), 500.);
+      float woodshopLevel = factorLevelByDistance(audioNodes[2].x, audioNodes[2].y, grid[x][y].x, grid[x][y].y,
+                                                  woodshop.mix.level(), 300.);
+      float typingLevel = factorLevelByDistance(audioNodes[3].x, audioNodes[3].y, grid[x][y].x, grid[x][y].y,
+                                                typing.mix.level(), 700.);
+      float streetLevel = factorLevelByDistance(audioNodes[4].x, audioNodes[4].y, grid[x][y].x, grid[x][y].y, 
+                                          street.mix.level(), 500.);
+      float level = conversationLevel + musicLevel + woodshopLevel + typingLevel + streetLevel;
+      
       if (level > 0.01){
         println(level);
       }
-      */
-      if (random(.5) < level) {
-        grid[x][y].alive = true;
-        /*
-        grid[x][y].red = constrain(int(map(level1 + level2, 0, .05, 0, 255)),0, 255);
-        grid[x][y].green = constrain(int(map(level3 + level4, 0, .05, 0, 255)),0, 255);
-        grid[x][y].blue = constrain(int(map(level5, 0, .02, 0, 255)),0, 255);
-        */      
+      
+      // NOTE: the relationship between the random  number below and the level above
+      // determines how big the outer ring of the circle that generates some live LEDs
+      // randomly vs the inner ring of the circle that is 100% live.
+      
+      if (random(20) < level) {
+        grid[x][y].alive = true;    
       } 
-      grid[20][2].alive = true;
-      grid[20][2].green = 0;
-      grid[50][5].alive = true;
-      grid[50][5].green = 0;
-      grid[80][8].alive = true;
-      grid[80][8].green = 0;
-      grid[100][3].alive = true;
-      grid[100][3].green = 0;
-      grid[170][5].alive = true;
-      grid[170][5].green = 0;
 
       // Display alive cells
       grid[x][y].display();
     }
   }
-  // Update the cells
+  // Run game of life iteration.
   iteration();
-  
-  /*
-  for (int i = 0; i < cols; i++) {
-    for (int j = 0; j < rows; j++) {                         
-      float distanceFactor1 = pointDistFactor(grid[40][2].x, grid[40][2].y, grid[i][j].x, grid[i][j].y, 0, 100);
-      float distanceFactor2 = pointDistFactor(grid[165][5].x, grid[165][5].y, grid[i][j].x, grid[i][j].y, 0, 100);
-      float bass1 = distanceFactor1 * fftLog.getAvg(0) * 2;
-      float bass2 = distanceFactor2 * fftLog2.getAvg(2) * 5;
-      int bass = int(constrain(bass1 + bass2, 0, 255));
-      grid[i][j].display(bass, 32, 32); // Bass controls red channel
-    }
-  }
-  */
 }

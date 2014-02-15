@@ -1,13 +1,24 @@
+/**
+  Processing simulation of sound reactive LED installation for the University of Chicago Arts Incubator.
+  MFA 6009-004: Nodes II | Spring 2014 | SAIC
+  SAIC Students: Brendan Albano, Haley Shonkwiler, Maggie Grady
+  External Collaborators: Kate Barbaria
+  
+  Copyright (c) 2014 Brendan Albano, Haley Shonkwiler, Kate Barbaria, Maggie Grady.
+  The MIT License (MIT)
+*/
+
 void iteration() {
+  // Iterate Game of Life simulation.
   for (int x = 0; x < cols; x++) {
     for (int y = 0; y < rows; y++) {
       gridBuffer[x][y].x = grid[x][y].x;
       gridBuffer[x][y].y = grid[x][y].y;
       gridBuffer[x][y].w = grid[x][y].w;
       gridBuffer[x][y].h = grid[x][y].h;
-      gridBuffer[x][y].red = grid[x][y].red;
-      gridBuffer[x][y].green = grid[x][y].green;
-      gridBuffer[x][y].blue = grid[x][y].blue;
+      // gridBuffer[x][y].red = grid[x][y].red;
+      // gridBuffer[x][y].green = grid[x][y].green;
+      // gridBuffer[x][y].blue = grid[x][y].blue;
       gridBuffer[x][y].alive = grid[x][y].alive;
     }
   }
@@ -24,9 +35,9 @@ void iteration() {
             if (!((xx == x) && (yy == y))) {
               if (gridBuffer[xx][yy].alive) {
                 neighbors++;
-                neighbor_red_sum += gridBuffer[xx][yy].red;
-                neighbor_green_sum += gridBuffer[xx][yy].green;
-                neighbor_blue_sum += gridBuffer[xx][yy].blue;
+                // neighbor_red_sum += gridBuffer[xx][yy].red;
+                // neighbor_green_sum += gridBuffer[xx][yy].green;
+                // neighbor_blue_sum += gridBuffer[xx][yy].blue;
               }
             }
           }
@@ -50,16 +61,20 @@ void iteration() {
   }
 }
 
-float pointDistFactor(float x1, float y1, float x2, float y2, float mapMin, float mapMax) {
+float factorLevelByDistance(float x1, float y1, float x2, float y2, float level, float scalingFactor) {
+  // Used for the "loudness gradient" circles around each audio node
+  // x1, y1 is the source of the sound. x2, y2, is the position at which to return the factored level.
+  level = level * scalingFactor;
   float pointDistance = dist(x1, y1, x2, y2);
-  float distanceFactor = map(pointDistance, mapMin, mapMax, 1, 0);
-  distanceFactor = constrain(distanceFactor, 0, 1);
-  return distanceFactor;
+  float levelByDistance = map(pointDistance, 0, level, level, 0);
+  levelByDistance = constrain(levelByDistance, 0, level);
+  return levelByDistance;
 }
 
-int calcOffset(int x, int numOffsets, int offsets[][]) {
+int calcOffset(int x, int offsets[][]) {
+  // Calculate offsets for mullions and such.
   int offset = 0;
-  for (int i = 0; i < numOffsets; i++) {
+  for (int i = 0; i < offsets.length; i++) {
     if (x > offsets[i][0]) {
       offset += offsets[i][1];
     }
@@ -67,8 +82,7 @@ int calcOffset(int x, int numOffsets, int offsets[][]) {
   return offset;
 }
 
-void stop()
- {
+void stop() {
  // always close Minim audio classes when you are done with them
  conversation.close();
  music.close();
@@ -78,5 +92,5 @@ void stop()
  // always stop Minim before exiting
  minim.stop();
  super.stop();
- }
+}
  
