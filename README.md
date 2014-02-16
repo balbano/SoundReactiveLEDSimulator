@@ -8,3 +8,5 @@ Processing simulation of sound reactive LED installation for the University of C
 SAIC Students: Brendan Albano, Maggie Grady, Haley Shonkwiler
 
 External Collaborators: Kate Barbaria
+
+*Work in progress.*
