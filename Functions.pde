@@ -82,6 +82,16 @@ int calcOffset(int x, int offsets[][]) {
   return offset;
 }
 
+void keyPressed(){
+  // Turn the background on and off
+ if (annotationToggle) {
+   annotationToggle = false;
+ } 
+ else {
+   annotationToggle = true;
+ }
+}
+
 void stop() {
  // always close Minim audio classes when you are done with them
  conversation.close();

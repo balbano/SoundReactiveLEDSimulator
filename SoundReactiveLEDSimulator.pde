@@ -34,11 +34,15 @@ int[][] horizontalOffsets = {
   {107, thinColumn}, {125, mullion}, {143, wideColumn}, {161, mullion}
 };
 
+// Toggle background image by pressing any key
+boolean annotationToggle = false;
+PImage annotation;
+
 // Parameters for LED grid.
 int LEDSize = 2;
 int spacing = 5;
 int baseXOffset = 20;
-int baseYOffset = 20;
+int baseYOffset = 50;
 int xOffset;
 int yOffset;
 
@@ -81,6 +85,11 @@ void setup() {
   woodshop.loop();
   typing.loop();
   street.loop();
+  
+  // Background image
+  annotation = loadImage("annotation.png");
+  
+  // noLoop();
 }
 
 void draw() {
@@ -127,6 +136,11 @@ void draw() {
       grid[x][y].display();
     }
   }
+  // Display annotation
+  if (annotationToggle) {
+    image(annotation, 114, 18);
+  }
   // Run game of life iteration.
   iteration();
+  // saveFrame();
 }
