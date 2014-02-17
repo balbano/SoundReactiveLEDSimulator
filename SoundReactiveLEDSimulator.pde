@@ -13,6 +13,8 @@ import ddf.minim.*;
 Minim minim;
 // AudioPlayers for each simulated microphone location
 AudioPlayer conversation, music, woodshop, typing, street;
+// AudioInput for mic input
+AudioInput micInput;
 
 // Representation of grid of LEDs
 LED[][] grid;
@@ -69,6 +71,10 @@ void setup() {
   woodshop = minim.loadFile("woodshop.wav", 1024);
   typing = minim.loadFile("typing.wav", 1024);
   street = minim.loadFile("street.wav", 1024);
+  
+  // use the getLineIn method of the Minim object to get an AudioInput
+  micInput = minim.getLineIn();
+  
   // play the files
   conversation.loop();
   music.loop();
@@ -81,7 +87,7 @@ void draw() {
   background(0);
   
   // Set audio node LEDs to alive and magenta.
-  LED[] audioNodes = {grid[20][2], grid[50][5], grid[80][8], grid[100][3], grid[170][5]};
+  LED[] audioNodes = {grid[20][2], grid[50][5], grid[80][8], grid[100][3], grid[130][4], grid[170][5]};
   for (int i = 0; i < audioNodes.length; i++){
     audioNodes[i].alive = true;
     audioNodes[i].red = 255;
@@ -99,9 +105,11 @@ void draw() {
                                                   woodshop.mix.level(), 300.);
       float typingLevel = factorLevelByDistance(audioNodes[3].x, audioNodes[3].y, grid[x][y].x, grid[x][y].y,
                                                 typing.mix.level(), 700.);
-      float streetLevel = factorLevelByDistance(audioNodes[4].x, audioNodes[4].y, grid[x][y].x, grid[x][y].y, 
+      float micLevel = factorLevelByDistance(audioNodes[4].x, audioNodes[4].y, grid[x][y].x, grid[x][y].y,
+                                                micInput.mix.level(), 50.);
+      float streetLevel = factorLevelByDistance(audioNodes[5].x, audioNodes[5].y, grid[x][y].x, grid[x][y].y, 
                                           street.mix.level(), 500.);
-      float level = conversationLevel + musicLevel + woodshopLevel + typingLevel + streetLevel;
+      float level = conversationLevel + musicLevel + woodshopLevel + typingLevel + micLevel + streetLevel;
       
       if (level > 0.01){
         println(level);
