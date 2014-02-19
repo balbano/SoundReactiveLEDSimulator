@@ -48,9 +48,12 @@ int xOffset;
 int yOffset;
 
 // Use color mixing
-boolean colorMixing = true;
-String colorSource = "location"; // "white", "random", "location"
+boolean colorMixing = false;
+String colorSource = "white"; // "white", "random", "location"
 
+// Level scaling factor "silencers"
+float woodshopVolume = 1.;
+float musicVolume = 1.;
 
 boolean sketchFullScreen() {
   // Always run in "present" mode.
@@ -107,7 +110,10 @@ void setup() {
 
 void draw() {
   background(0);
-  
+  fill(255);
+  text("c: toggle color. m: toggle color mixing. a: toggle annotations.", 10, 10);
+  text("1: toggle woodshop activity. 2: toggle music activity.", 10, 25);
+    
   // Set audio node LEDs to alive and magenta.
   LED[] audioNodes = {grid[20][2], grid[50][5], grid[80][8], grid[100][3], grid[130][4], grid[170][5]};
   int[][] nodeColors = {{255, 128, 0}, {128, 255, 0}, {128, 0, 255}, {255, 0, 128}, {0, 255, 128}, {0, 128, 255}};
@@ -117,9 +123,9 @@ void draw() {
       float conversationLevel = factorByDistance(audioNodes[0].x, audioNodes[0].y, grid[x][y].x, grid[x][y].y, 
                                                       conversation.mix.level(), 500.);
       float musicLevel = factorByDistance(audioNodes[1].x, audioNodes[1].y, grid[x][y].x, grid[x][y].y,
-                                               music.mix.level(), 500.);
+                                               music.mix.level(), 500. / musicVolume);
       float woodshopLevel = factorByDistance(audioNodes[2].x, audioNodes[2].y, grid[x][y].x, grid[x][y].y,
-                                                  woodshop.mix.level(), 300.);
+                                                  woodshop.mix.level(), 300. / woodshopVolume);
       float typingLevel = factorByDistance(audioNodes[3].x, audioNodes[3].y, grid[x][y].x, grid[x][y].y,
                                                 typing.mix.level(), 700.);
       float micLevel = factorByDistance(audioNodes[4].x, audioNodes[4].y, grid[x][y].x, grid[x][y].y,
@@ -141,13 +147,19 @@ void draw() {
       nodeGreen = constrain(nodeGreen, 0, 255);
       nodeBlue = constrain(nodeBlue, 0, 255);
       
-      if (level > 0.01){
-        println(level);
-      }
+      //if (level > 0.01){
+      //  println(level);
+      //}
       
       // NOTE: the relationship between the random  number below and the level above
       // determines how big the outer ring of the circle that generates some live LEDs
       // randomly vs the inner ring of the circle that is 100% live.
+      
+      if (!colorMixing) {
+        grid[x][y].red = 255;
+        grid[x][y].green = 255;
+        grid[x][y].blue = 255;
+      }
       
       if (random(20) < level) {
         grid[x][y].alive = true;

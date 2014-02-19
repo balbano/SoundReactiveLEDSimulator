@@ -1,12 +1,12 @@
 /**
-  Processing simulation of sound reactive LED installation for the University of Chicago Arts Incubator.
-  MFA 6009-004: Nodes II | Spring 2014 | SAIC
-  SAIC Students: Brendan Albano, Haley Shonkwiler, Maggie Grady
-  External Collaborators: Kate Barbaria
-  
-  Copyright (c) 2014 Brendan Albano, Haley Shonkwiler, Kate Barbaria, Maggie Grady.
-  The MIT License (MIT)
-*/
+ Processing simulation of sound reactive LED installation for the University of Chicago Arts Incubator.
+ MFA 6009-004: Nodes II | Spring 2014 | SAIC
+ SAIC Students: Brendan Albano, Haley Shonkwiler, Maggie Grady
+ External Collaborators: Kate Barbaria
+ 
+ Copyright (c) 2014 Brendan Albano, Haley Shonkwiler, Kate Barbaria, Maggie Grady.
+ The MIT License (MIT)
+ */
 
 void iteration() {
   // Iterate Game of Life simulation.
@@ -51,7 +51,7 @@ void iteration() {
       if (gridBuffer[x][y].alive) {
         if ((neighbors < 2) || (neighbors > 3)) {
           grid[x][y].alive = false;
-        } 
+        }
       }
       else {
         if (neighbors == 3) {
@@ -88,25 +88,63 @@ int calcOffset(int x, int offsets[][]) {
   return offset;
 }
 
-void keyPressed(){
+void keyPressed() {
   // Turn the background on and off
- if (annotationToggle) {
-   annotationToggle = false;
- } 
- else {
-   annotationToggle = true;
- }
+  if (key == 'm' || key == 'M') {
+    if (colorMixing) {
+      colorMixing = false;
+      println("colorMixing set to false");
+    } 
+    else {
+      colorMixing = true;
+      println("colorMixing set to true");
+    }
+  }
+  else if (key == 'c' || key == 'C') {
+    if (colorSource == "white") {
+      colorSource = "location";
+      println("colorSource set to location");
+    } 
+    else {
+      colorSource = "white";
+      println("colorSource set to white");
+    }
+  }
+  else if (key == 'a' || key == 'A') {
+    if (annotationToggle) {
+      annotationToggle = false;
+    } 
+    else {
+      annotationToggle = true;
+    }
+  }
+  else if (key == '1') {
+    if (woodshopVolume == 1.) {
+      woodshopVolume = 50.;
+    } 
+    else {
+      woodshopVolume = 1.;
+    }
+  }
+  else if (key == '2') {
+    if (musicVolume == 1.) {
+      musicVolume = 50.;
+    } 
+    else {
+      musicVolume = 1.;
+    }
+  }
 }
 
 void stop() {
- // always close Minim audio classes when you are done with them
- conversation.close();
- music.close();
- woodshop.close();
- typing.close();
- street.close();
- // always stop Minim before exiting
- minim.stop();
- super.stop();
+  // always close Minim audio classes when you are done with them
+  conversation.close();
+  music.close();
+  woodshop.close();
+  typing.close();
+  street.close();
+  // always stop Minim before exiting
+  minim.stop();
+  super.stop();
 }
- 
+
