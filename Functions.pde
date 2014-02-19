@@ -16,9 +16,11 @@ void iteration() {
       gridBuffer[x][y].y = grid[x][y].y;
       gridBuffer[x][y].w = grid[x][y].w;
       gridBuffer[x][y].h = grid[x][y].h;
-      // gridBuffer[x][y].red = grid[x][y].red;
-      // gridBuffer[x][y].green = grid[x][y].green;
-      // gridBuffer[x][y].blue = grid[x][y].blue;
+      if (colorMixing) {
+        gridBuffer[x][y].red = grid[x][y].red;
+        gridBuffer[x][y].green = grid[x][y].green;
+        gridBuffer[x][y].blue = grid[x][y].blue;
+      }
       gridBuffer[x][y].alive = grid[x][y].alive;
     }
   }
@@ -35,9 +37,11 @@ void iteration() {
             if (!((xx == x) && (yy == y))) {
               if (gridBuffer[xx][yy].alive) {
                 neighbors++;
-                // neighbor_red_sum += gridBuffer[xx][yy].red;
-                // neighbor_green_sum += gridBuffer[xx][yy].green;
-                // neighbor_blue_sum += gridBuffer[xx][yy].blue;
+                if (colorMixing) {
+                  neighbor_red_sum += gridBuffer[xx][yy].red;
+                  neighbor_green_sum += gridBuffer[xx][yy].green;
+                  neighbor_blue_sum += gridBuffer[xx][yy].blue;
+                }
               }
             }
           }
@@ -52,16 +56,18 @@ void iteration() {
       else {
         if (neighbors == 3) {
           grid[x][y].alive = true;
-          // grid[x][y].red = neighbor_red_sum / neighbors;
-          // grid[x][y].green = neighbor_green_sum / neighbors;
-          // grid[x][y].blue = neighbor_blue_sum / neighbors;
+          if (colorMixing) {
+            grid[x][y].red = neighbor_red_sum / neighbors;
+            grid[x][y].green = neighbor_green_sum / neighbors;
+            grid[x][y].blue = neighbor_blue_sum / neighbors;
+          }
         }
       }
     }
   }
 }
 
-float factorLevelByDistance(float x1, float y1, float x2, float y2, float level, float scalingFactor) {
+float factorByDistance(float x1, float y1, float x2, float y2, float level, float scalingFactor) {
   // Used for the "loudness gradient" circles around each audio node
   // x1, y1 is the source of the sound. x2, y2, is the position at which to return the factored level.
   level = level * scalingFactor;
