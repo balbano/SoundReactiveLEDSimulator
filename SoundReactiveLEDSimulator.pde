@@ -113,6 +113,7 @@ void draw() {
   fill(255);
   text("c: toggle color. m: toggle color mixing. a: toggle annotations.", 10, 10);
   text("1: toggle woodshop activity. 2: toggle music activity.", 10, 25);
+  text("<space>: take screenshot", 10, 40);
     
   // Set audio node LEDs to alive and magenta.
   LED[] audioNodes = {grid[20][2], grid[50][5], grid[80][8], grid[100][3], grid[130][4], grid[170][5]};

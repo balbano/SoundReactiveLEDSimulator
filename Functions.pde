@@ -134,6 +134,9 @@ void keyPressed() {
       musicVolume = 1.;
     }
   }
+  else if (key == ' ') {
+    saveFrame("screenshot-###.jpg");
+  }
 }
 
 void stop() {
