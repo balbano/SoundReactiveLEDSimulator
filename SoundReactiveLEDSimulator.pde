@@ -9,6 +9,10 @@
 */
 
 import ddf.minim.*;
+import processing.pdf.*;
+
+// Bool to control pdf screenshots
+boolean record;
 
 Minim minim;
 // AudioPlayers for each simulated microphone location
@@ -109,6 +113,10 @@ void setup() {
 }
 
 void draw() {
+  if (record) {
+    // Note that #### will be replaced with the frame number. Fancy!
+    beginRecord(PDF, "frame-####.pdf"); 
+  }
   background(0);
   fill(255);
   text("c: toggle color. m: toggle color mixing. a: toggle annotations.", 10, 10);
@@ -205,5 +213,8 @@ void draw() {
   }
   // Run game of life iteration.
   iteration();
-  // saveFrame();
+  if (record) {
+    endRecord();
+  record = false;
+  }
 }

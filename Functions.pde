@@ -135,7 +135,7 @@ void keyPressed() {
     }
   }
   else if (key == ' ') {
-    saveFrame("screenshot-###.jpg");
+    record = true;
   }
 }
 
