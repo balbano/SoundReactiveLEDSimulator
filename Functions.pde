@@ -70,10 +70,17 @@ void iteration() {
 float factorByDistance(float x1, float y1, float x2, float y2, float level, float scalingFactor) {
   // Used for the "loudness gradient" circles around each audio node
   // x1, y1 is the source of the sound. x2, y2, is the position at which to return the factored level.
-  level = level * scalingFactor;
+  //Minim produces RMS levels that range from 0 to 1. Convert to 0 to 255 to match Arduino.
+  level *= scalingFactor;
+  level = constrain(level, 0, 255);
+  float decay = 16;
+  x1 /= spacing;
+  y1 /= spacing;
+  x2 /= spacing;
+  y2 /= spacing;
   float pointDistance = dist(x1, y1, x2, y2);
-  float levelByDistance = map(pointDistance, 0, level, level, 0);
-  levelByDistance = constrain(levelByDistance, 0, level);
+  float levelByDistance = level - pointDistance * decay;
+  levelByDistance = constrain(levelByDistance, 0, 255);
   return levelByDistance;
 }
 

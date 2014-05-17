@@ -26,16 +26,16 @@ LED[][] grid;
 LED[][] gridBuffer;
 
 // Number of columns and rows
-int cols = 180;
-int rows = 10;
+int cols = 110;
+int rows = 7;
 
 // Grid offsets
 int mullion = 3;
 int thinColumn = 9;
 int wideColumn = 18;
 int[][] horizontalOffsets = { 
-  {17, mullion}, {35, thinColumn}, {53, mullion}, {71, wideColumn}, {89, mullion}, 
-  {107, thinColumn}, {125, mullion}, {143, wideColumn}, {161, mullion}
+  {11, mullion}, {22, thinColumn}, {33, mullion}, {44, wideColumn}, {55, mullion}, 
+  {66, thinColumn}, {77, mullion}, {88, wideColumn}, {99, mullion}
 };
 int totalOffset = calcOffset(cols, horizontalOffsets);
 
@@ -44,8 +44,8 @@ boolean annotationToggle = false;
 PImage annotation;
 
 // Parameters for LED grid.
-int LEDSize = 2;
-int spacing = 5;
+int LEDSize = 4;
+int spacing = 10;
 int baseXOffset;
 int baseYOffset;
 int xOffset;
@@ -66,7 +66,7 @@ boolean sketchFullScreen() {
 
 void setup() {
   frameRate(15); // 15 looks good, can be modified.
-  size(1200, 600);
+  size(1440, 900);
   baseXOffset = (width - ((cols-1)*spacing + totalOffset)) / 2;
   baseYOffset = (height - ((rows-1)*spacing)) / 2;
   
@@ -124,34 +124,35 @@ void draw() {
   text("<space>: take screenshot", 10, 40);
     
   // Set audio node LEDs to alive and magenta.
-  LED[] audioNodes = {grid[20][2], grid[50][5], grid[80][8], grid[100][3], grid[130][4], grid[170][5]};
-  int[][] nodeColors = {{255, 128, 0}, {128, 255, 0}, {128, 0, 255}, {255, 0, 128}, {0, 255, 128}, {0, 128, 255}};
+  LED[] audioNodes = {grid[5][3], grid[18][2], grid[37][3], grid[50][3], grid[68][2], grid[86][1], grid[105][1],
+                      grid[17][5], grid[32][5], grid[55][5], grid[76][5], grid[99][5]};
+  int[][] nodeColors = {{255, 128, 0}, {128, 255, 0}, {128, 0, 255}, {255, 0, 128}, {0, 255, 128}, {0, 128, 255}, {255, 255, 0},
+                       {255, 255, 255}, {255, 255, 255}, {255, 255, 255}, {255, 255, 255}, {255, 255, 255}};
+  float audioLevels[] = {conversation.mix.level(), conversation.mix.level(), conversation.mix.level(), woodshop.mix.level(), conversation.mix.level(), music.mix.level(), typing.mix.level(),
+                       street.mix.level(), street.mix.level(), micInput.mix.level(), street.mix.level(), street.mix.level()};
+  // Minim gives levels in a range of 0 to 1. Multiply by 255 to match Arduino readings.
+  for (int i = 0; i < audioLevels.length; i++) {
+    audioLevels[i] = audioLevels[i] * 255; 
+  }    
+  float scalingFactors[] = {.5, 1, .5, 1/woodshopVolume, 1, 1/musicVolume, 1,
+                         2, 1, .5, 1, 1};
+                       
+             
   // Birth cells based on volume and display cells
   for (int x = 0; x < cols; x++) {
-    for (int y = 0; y < rows; y++) {      
-      float conversationLevel = factorByDistance(audioNodes[0].x, audioNodes[0].y, grid[x][y].x, grid[x][y].y, 
-                                                      conversation.mix.level(), 500.);
-      float musicLevel = factorByDistance(audioNodes[1].x, audioNodes[1].y, grid[x][y].x, grid[x][y].y,
-                                               music.mix.level(), 500. / musicVolume);
-      float woodshopLevel = factorByDistance(audioNodes[2].x, audioNodes[2].y, grid[x][y].x, grid[x][y].y,
-                                                  woodshop.mix.level(), 300. / woodshopVolume);
-      float typingLevel = factorByDistance(audioNodes[3].x, audioNodes[3].y, grid[x][y].x, grid[x][y].y,
-                                                typing.mix.level(), 700.);
-      float micLevel = factorByDistance(audioNodes[4].x, audioNodes[4].y, grid[x][y].x, grid[x][y].y,
-                                                micInput.mix.level(), 50.);
-      float streetLevel = factorByDistance(audioNodes[5].x, audioNodes[5].y, grid[x][y].x, grid[x][y].y, 
-                                          street.mix.level(), 500.);
-      
-      float level = conversationLevel + musicLevel + woodshopLevel + typingLevel + micLevel + streetLevel;
-      
+    for (int y = 0; y < rows; y++) {                               
+      float level = 0;
       int nodeRed = 0;
       int nodeGreen = 0;
       int nodeBlue = 0;
       for (int i = 0; i < audioNodes.length; i++) {
+        float factoredLevel = factorByDistance(audioNodes[i].x, audioNodes[i].y, grid[x][y].x, grid[x][y].y, audioLevels[i], scalingFactors[i]);
+        level += factoredLevel;
         nodeRed += int(factorByDistance(audioNodes[i].x, audioNodes[i].y, grid[x][y].x, grid[x][y].y, nodeColors[i][0], 1.));
         nodeGreen += int(factorByDistance(audioNodes[i].x, audioNodes[i].y, grid[x][y].x, grid[x][y].y, nodeColors[i][1], 1.));
         nodeBlue += int(factorByDistance(audioNodes[i].x, audioNodes[i].y, grid[x][y].x, grid[x][y].y, nodeColors[i][2], 1.));  
       }
+      
       nodeRed = constrain(nodeRed, 0, 255);
       nodeGreen = constrain(nodeGreen, 0, 255);
       nodeBlue = constrain(nodeBlue, 0, 255);
@@ -170,7 +171,7 @@ void draw() {
         grid[x][y].blue = 255;
       }
       
-      if (random(20) < level) {
+      if (random(32) < level) {
         grid[x][y].alive = true;
         if (colorSource == "white") {
           grid[x][y].red = 255;
